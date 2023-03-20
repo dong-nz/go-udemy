@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -58,7 +59,13 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 	if t.MaxFileSize == 0 {
 		t.MaxFileSize = 1024 * 1024 * 1024
 	}
-	err := r.ParseMultipartForm(int64(t.MaxFileSize))
+
+	err := t.CreateDirIfNotExist(uploadDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.ParseMultipartForm(int64(t.MaxFileSize))
 	if err != nil {
 		return nil, errors.New("the uploaded files is too big")
 	}
@@ -131,4 +138,29 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 		}
 	}
 	return uploadedFiles, err
+}
+
+// Create a directory and all necessary parents, if it does not exist
+func (t *Tools) CreateDirIfNotExist(path string) error {
+	const mode = 0775
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.MkdirAll(path, mode)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (t *Tools) Slugify(s string) (string, error) {
+	if s == "" {
+		return "", errors.New("empty string not permitted")
+	}
+
+	var re = regexp.MustCompile(`[^a-z\d]+`)
+	slug := strings.Trim(re.ReplaceAllString(strings.ToLower(s), "-"), "-")
+	if len(slug) == 0 {
+		return "", errors.New("after removing characters, slug is zero length")
+	}
+	return slug, nil
 }

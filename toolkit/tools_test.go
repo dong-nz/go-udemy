@@ -176,3 +176,55 @@ func TestTools_UploadOneFile(t *testing.T) {
 		_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFile.NewFileName))
 	}
 }
+
+func TestTools_CreateDirIfNotExist(t *testing.T) {
+	var testTool Tools
+
+	err := testTool.CreateDirIfNotExist("./testdata/mydir")
+	if err != nil {
+		t.Error(err)
+	}
+
+	_ = os.Remove("./testdata/mydir")
+}
+
+var slugTests = []struct {
+	name          string
+	s             string
+	expected      string
+	errorExpected bool
+}{
+	{
+		name:          "valid string",
+		s:             "now is the time",
+		expected:      "now-is-the-time",
+		errorExpected: false,
+	},
+	{
+		name:          "empty string",
+		s:             "",
+		expected:      "",
+		errorExpected: true,
+	},
+	{
+		name:          "complex string",
+		s:             "Now the time for all GOOD men! + fish & such &123",
+		expected:      "now-the-time-for-all-good-men-fish-such-123",
+		errorExpected: false,
+	},
+}
+
+func TestTools_Slugify(t *testing.T) {
+	var testTool Tools
+
+	for _, e := range slugTests {
+		slug, err := testTool.Slugify(e.s)
+		if err != nil && !e.errorExpected {
+			t.Errorf("%s: error expected when none expected: %s", e.name, err.Error())
+		}
+
+		if !e.errorExpected && slug != e.expected {
+			t.Errorf("%s: wrong slug returned; expected %s but got %s", e.name, e.expected, slug)
+		}
+	}
+}
