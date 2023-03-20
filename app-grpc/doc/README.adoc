@@ -1,5 +1,5 @@
 = Go & gRPC
-Dong Nguyen <dong.nguyen@lazada.com>
+Dong Nguyen <nguyendong_bkdn@yahoo.com>
 :toc: left
 :icons: font
 :url-quickref: https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/
